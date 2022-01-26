@@ -70,18 +70,18 @@ async fn destroy(db: Db) -> Result<()> {
 }
 
 async fn init_db(rocket: Rocket<Build>) -> Rocket<Build> {
-    Db::get_one(&rocket).await
-        .expect("database mounted")
-        .run(|conn| {
-            conn.execute(r#"
-                CREATE TABLE posts (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    title VARCHAR NOT NULL,
-                    text VARCHAR NOT NULL,
-                    published BOOLEAN NOT NULL DEFAULT 0
-                )"#, params![])
-        }).await
-        .expect("can init rusqlite DB");
+    // Db::get_one(&rocket).await
+    //     .expect("database mounted")
+    //     .run(|conn| {
+    //         conn.execute(r#"
+    //             CREATE TABLE posts (
+    //                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+    //                 title VARCHAR NOT NULL,
+    //                 text VARCHAR NOT NULL,
+    //                 published BOOLEAN NOT NULL DEFAULT 0
+    //             )"#, params![])
+    //     }).await
+    //     .expect("can init rusqlite DB");
 
     rocket
 }

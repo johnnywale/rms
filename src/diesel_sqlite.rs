@@ -8,7 +8,7 @@ use rocket_sync_db_pools::diesel;
 use self::diesel::prelude::*;
 
 #[database("diesel")]
-struct Db(diesel::SqliteConnection);
+struct Db(diesel::MysqlConnection);
 
 type Result<T, E = Debug<diesel::result::Error>> = std::result::Result<T, E>;
 
@@ -98,7 +98,7 @@ async fn run_migrations(rocket: Rocket<Build>) -> Rocket<Build> {
 pub fn stage() -> AdHoc {
     AdHoc::on_ignite("Diesel SQLite Stage", |rocket| async {
         rocket.attach(Db::fairing())
-            .attach(AdHoc::on_ignite("Diesel Migrations", run_migrations))
+       //     .attach(AdHoc::on_ignite("Diesel Migrations", run_migrations))
             .mount("/diesel", routes![list, read, create, delete, destroy])
     })
 }

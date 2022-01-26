@@ -33,8 +33,7 @@
 url = "file:rusqlite?mode=memory&cache=shared"
 
 [default.databases.sqlx]
-url = "db/sqlx/db.sqlite"
+url = "mysql://root:password@localhost/db"
 
 [default.databases.diesel]
-url = "db/diesel/db.sqlite"
-timeout = 10
+url = "mysql://root:password@localhost/db"

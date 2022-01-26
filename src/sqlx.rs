@@ -7,7 +7,7 @@ use rocket_db_pools::{Connection, Database, sqlx};
 
 #[derive(Database)]
 #[database("sqlx")]
-struct Db(sqlx::SqlitePool);
+struct Db(sqlx::MySqlPool);
 
 type Result<T, E = rocket::response::Debug<sqlx::Error>> = std::result::Result<T, E>;
 
@@ -22,12 +22,9 @@ struct Post {
 
 #[post("/", data = "<post>")]
 async fn create(mut db: Connection<Db>, post: Json<Post>) -> Result<Created<Json<Post>>> {
-    let res = sqlx::query!("INSERT INTO posts (title, text) VALUES (?, ?)", post.title, post.text)
+    let x = sqlx::query!("INSERT INTO posts (title, text) VALUES (?, ?)", post.title, post.text)
         .execute(&mut *db)
         .await?;
-
-
-
 
     Ok(Created::new("/").body(post))
 }
@@ -39,18 +36,17 @@ async fn list(mut db: Connection<Db>) -> Result<Json<Vec<i64>>> {
         .map_ok(|record| record.id)
         .try_collect::<Vec<_>>()
         .await?;
-
     Ok(Json(ids))
 }
 
 #[get("/<id>")]
 async fn read(mut db: Connection<Db>, id: i64) -> Option<Json<Post>> {
     sqlx::query!("SELECT id, title, text FROM posts WHERE id = ?", id)
-        .fetch_one(&mut *db)
-        .map_ok(|r| Json(Post { id: Some(r.id), title: r.title, text: r.text }))
+        .fetch_one(&mut *db).map_ok(|r| Json(Post { id: Some(r.id), title: r.title, text: r.text.unwrap() }))
         .await
         .ok()
 }
+
 
 #[delete("/<id>")]
 async fn delete(mut db: Connection<Db>, id: i64) -> Result<Option<()>> {
@@ -63,6 +59,7 @@ async fn delete(mut db: Connection<Db>, id: i64) -> Result<Option<()>> {
 
 #[delete("/")]
 async fn destroy(mut db: Connection<Db>) -> Result<()> {
+    //sqlx::query("DELETE FROM posts").execute(&mut *db).await?;
     sqlx::query!("DELETE FROM posts").execute(&mut *db).await?;
 
     Ok(())
@@ -84,7 +81,7 @@ async fn run_migrations(rocket: Rocket<Build>) -> fairing::Result {
 pub fn stage() -> AdHoc {
     AdHoc::on_ignite("SQLx Stage", |rocket| async {
         rocket.attach(Db::init())
-            .attach(AdHoc::try_on_ignite("SQLx Migrations", run_migrations))
-            .mount("/sqlx", routes![list, create, read, delete, destroy])
+//            .attach(AdHoc::try_on_ignite("SQLx Migrations", run_migrations))
+           .mount("/sqlx", routes![list, create, read, delete, destroy])
     })
 }
